@@ -1,142 +1,42 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport"
-    content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
-  <title>Pictionary Live — Realtime Multiplayer</title>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Pictionary Live — Full (Realtime + Game)</title>
   <style>
-    :root {
-      --bg: #071428;
-      --panel: rgba(255, 255, 255, 0.03);
-      --accent: #06b6d4;
-      --muted: #9fb0c6;
-      --text: #e6eef6;
-    }
-
-    * {
-      box-sizing: border-box;
-      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto,
-        'Helvetica Neue', Arial;
-    }
-
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-      background: linear-gradient(180deg, #031022 0%, #071428 100%);
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .app {
-      max-width: 1100px;
-      margin: 12px auto;
-      padding: 12px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    h1 {
-      font-size: 18px;
-      margin: 0;
-    }
-
-    main {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    @media (max-width: 900px) {
-      main {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .panel {
-      background: var(--panel);
-      padding: 12px;
-      border-radius: 10px;
-    }
-
-    .canvas-area {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .canvas-wrap {
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .canvas-frame {
-      width: 100%;
-      height: 0;
-      padding-bottom: 62.5%;
-      position: relative;
-    }
-
-    canvas {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      touch-action: none;
-    }
-
-    .tools {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .btn {
-      padding: 10px 14px;
-      border: 0;
-      border-radius: 8px;
-      background: var(--accent);
-      color: black;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .btn.secondary {
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .tool-field {
-      padding: 6px 8px;
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    :root{--bg:#071428;--panel:rgba(255,255,255,0.03);--accent:#06b6d4;--muted:#9fb0c6;--text:#e6eef6}
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#031022 0%, #071428 100%);color:var(--text);-webkit-font-smoothing:antialiased}
+    .app{max-width:1100px;margin:12px auto;padding:12px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    h1{font-size:18px;margin:0}
+    main{display:grid;grid-template-columns:1fr 380px;gap:12px;margin-top:12px}
+    @media (max-width:900px){main{grid-template-columns:1fr}}
+    .panel{background:var(--panel);padding:12px;border-radius:10px}
+    .canvas-area{display:flex;flex-direction:column;gap:10px}
+    .canvas-wrap{background:#fff;border-radius:10px;overflow:hidden}
+    .canvas-frame{width:100%;height:0;padding-bottom:62.5%;position:relative}
+    canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none}
+    .tools{display:flex;flex-wrap:wrap;gap:8px}
+    .btn{padding:10px 14px;border:0;border-radius:8px;background:var(--accent);color:#021c22;font-weight:600;cursor:pointer}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .tool-field{padding:6px 8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:6px}
+    .muted{color:var(--muted)}
+    .players{display:flex;gap:8px}
+    .player-box{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .guess-list{max-height:160px;overflow:auto;padding:6px;display:flex;flex-direction:column;gap:6px}
+    .guess-item{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)}
+    .big{font-size:20px;font-weight:700}
   </style>
 </head>
-
 <body>
   <div class="app">
     <header>
-      <h1>🎨 Pictionary Live — Realtime</h1>
+      <h1>Pictionary Live — Full</h1>
       <div style="display:flex;gap:8px;align-items:center">
         <label class="muted">Round (sec)</label>
-        <input id="timeLimit" type="number" value="60"
-          style="width:80px;padding:8px;border-radius:8px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.1)" />
+        <input id="timeLimit" type="number" value="60" style="width:80px;padding:8px;border-radius:8px;background:transparent;color:inherit;border:1px solid rgba(255,255,255,0.04)" />
       </div>
     </header>
 
@@ -149,205 +49,446 @@
         </div>
 
         <div class="tools">
-          <div class="tool-field">
-            <label>Brush</label>
-            <input id="brushSize" type="range" min="2" max="40" value="6" />
-          </div>
-
-          <div class="tool-field">
-            <label>Color</label>
-            <input id="color" type="color" value="#000000" />
-          </div>
-
-          <button class="btn secondary" id="clearBtn">Clear</button>
-          <button class="btn secondary" id="undoBtn">Undo</button>
+          <div class="tool-field"><label>Brush</label><input id="brushSize" type="range" min="2" max="40" value="6" /></div>
+          <div class="tool-field"><label>Color</label><input id="color" type="color" value="#000000" /></div>
+          <button id="clearBtn" class="btn secondary">Clear</button>
+          <button id="undoBtn" class="btn secondary">Undo</button>
+          <div style="flex:1"></div>
+          <button id="saveBtn" class="btn">Save PNG</button>
         </div>
 
+        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+          <div class="muted">Tip: Drawer sees the word. Guesser types guesses on the right.</div>
+          <div class="muted">Rounds: <span id="roundCount">0</span></div>
+        </div>
       </section>
 
-      <!-- Sidebar -->
-      <aside class="panel" style="display:flex;flex-direction:column;gap:12px">
+      <aside class="panel" style="display:flex;flex-direction:column;gap:10px">
         <div>
-          <label>Player 1</label>
-          <input id="p1name" value="Player 1"
-            style="width:100%;padding:8px;margin-top:6px;border-radius:8px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.12)" />
+          <div class="player-box">
+            <div>
+              <div class="muted">Player 1</div>
+              <input id="p1name" value="Player 1" style="background:transparent;border:0;color:inherit;font-weight:600" />
+            </div>
+            <div class="big" id="p1score">0</div>
+          </div>
+
+          <div class="player-box">
+            <div>
+              <div class="muted">Player 2</div>
+              <input id="p2name" value="Player 2" style="background:transparent;border:0;color:inherit;font-weight:600" />
+            </div>
+            <div class="big" id="p2score">0</div>
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <button id="setNamesBtn" class="btn secondary">Set Names (sync)</button>
+            <button id="claimP1" class="btn secondary">I am Player 1</button>
+            <button id="claimP2" class="btn secondary">I am Player 2</button>
+          </div>
         </div>
 
         <div>
-          <label>Player 2</label>
-          <input id="p2name" value="Player 2"
-            style="width:100%;padding:8px;margin-top:6px;border-radius:8px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.12)" />
+          <div class="muted">Round</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <div>
+              <div class="muted">Current drawer</div>
+              <div id="currentDrawer" class="big">Player 1</div>
+            </div>
+            <div>
+              <div class="muted">Time left</div>
+              <div id="timer" class="big">00:00</div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;padding:10px;border-radius:8px;background:linear-gradient(90deg,rgba(0,0,0,0.04),transparent)">
+            <div class="muted">Secret word (drawer only)</div>
+            <div id="secretWord" style="font-size:18px;font-weight:700;margin-top:6px">—</div>
+          </div>
         </div>
 
-        <button class="btn" id="startBtn">Start Round</button>
-        <button class="btn secondary" id="nextBtn">Next Turn</button>
-        <button class="btn secondary" id="resetBtn">Reset</button>
-
         <div>
-          <p>⏳ Time Left: <span id="timer">00:00</span></p>
-          <p>🎯 Current drawer: <span id="currentDrawer">Player 1</span></p>
-          <p>📝 Word: <span id="secretWord">—</span></p>
+          <div class="muted">Guesser</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input id="guessInput" type="text" placeholder="Type a guess and press Enter" style="flex:1;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" />
+            <button id="guessBtn" class="btn">Guess</button>
+          </div>
+          <div class="guess-list" id="guesses"></div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button id="startBtn" class="btn">Start Round</button>
+          <button id="nextBtn" class="btn secondary">Next Turn</button>
+          <button id="resetBtn" class="btn secondary">Reset Game</button>
         </div>
       </aside>
     </main>
   </div>
 
   <script>
-    /* ---------------------------
-     CONFIG: SET YOUR SERVER HERE
-    ---------------------------- */
+    // ---- CONFIG ----
+    const WS_URL = (function(){
+      // override via ?ws=... if needed
+      const q = new URLSearchParams(location.search).get('ws');
+      if (q) return q;
+      return (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host;
+    })();
 
-    const WS_URL = "https://drawdash-25v4.onrender.com";
-    // Example after deploy:
-    // const WS_URL = "wss://pictionary-ws.onrender.com";
+    // ----- DOM -----
+    const board = document.getElementById('board');
+    const ctx = board.getContext('2d');
+    const brushSize = document.getElementById('brushSize');
+    const colorEl = document.getElementById('color');
+    const clearBtn = document.getElementById('clearBtn');
+    const undoBtn = document.getElementById('undoBtn');
+    const saveBtn = document.getElementById('saveBtn');
 
+    const p1name = document.getElementById('p1name');
+    const p2name = document.getElementById('p2name');
+    const setNamesBtn = document.getElementById('setNamesBtn');
+    const claimP1 = document.getElementById('claimP1');
+    const claimP2 = document.getElementById('claimP2');
+    const p1scoreEl = document.getElementById('p1score');
+    const p2scoreEl = document.getElementById('p2score');
 
-    /* ------------------------
-       WebSocket Connection
-    ------------------------- */
+    const currentDrawerEl = document.getElementById('currentDrawer');
+    const timerEl = document.getElementById('timer');
+    const secretWordEl = document.getElementById('secretWord');
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const timeLimitEl = document.getElementById('timeLimit');
+    const roundCountEl = document.getElementById('roundCount');
 
-    let ws = new WebSocket(WS_URL);
+    const guessInput = document.getElementById('guessInput');
+    const guessBtn = document.getElementById('guessBtn');
+    const guessesWrap = document.getElementById('guesses');
 
-    ws.onopen = () => console.log("Connected to WebSocket server");
-    ws.onclose = () => console.log("Disconnected from WebSocket server");
-
-
-    /* ------------------------
-         Canvas + Drawing
-    ------------------------- */
-
-    const board = document.getElementById("board");
-    const ctx = board.getContext("2d");
-
-    let drawing = false;
+    // ---- STATE ----
     let historyStrokes = [];
+    let drawing = false;
+    let currentStroke = null;
 
-    function resizeCanvas() {
+    // player identity on this client: 0 or 1. Default: undecided (null)
+    let myPlayerIndex = null;
+
+    // round state local mirror
+    let roundPlaying = false;
+    let roundTimer = null;
+    let timeLeft = 0;
+    let drawerIndex = 0;
+    let localSecret = null; // will only be displayed if myPlayerIndex === drawerIndex
+
+    let roundCount = 0;
+
+    // ----- WebSocket connection -----
+    let ws = new WebSocket(WS_URL);
+    ws.addEventListener('open', () => {
+      console.log('WS connected to', WS_URL);
+      ws.send(JSON.stringify({ type: 'request-state' }));
+    });
+
+    ws.addEventListener('message', (ev) => {
+      let data;
+      try { data = JSON.parse(ev.data); } catch (e) { return; }
+      handleMessage(data);
+    });
+
+    ws.addEventListener('close', () => console.log('WS closed'));
+    ws.addEventListener('error', (e) => console.log('WS error', e));
+
+    function send(msg){
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+    }
+
+    // ----- Handle incoming messages -----
+    function handleMessage(data){
+      switch(data.type){
+        case 'history':
+          historyStrokes = data.strokes || [];
+          redrawAll();
+          break;
+        case 'stroke':
+          historyStrokes.push(data.payload);
+          drawStroke(data.payload);
+          break;
+        case 'clear':
+          historyStrokes = [];
+          redrawAll();
+          break;
+        case 'undo':
+          historyStrokes.pop();
+          redrawAll();
+          break;
+        case 'scores':
+          if (Array.isArray(data.scores)){
+            p1scoreEl.textContent = data.scores[0] || 0;
+            p2scoreEl.textContent = data.scores[1] || 0;
+          }
+          break;
+        case 'names':
+          if (data.names){
+            p1name.value = data.names[0] || p1name.value;
+            p2name.value = data.names[1] || p2name.value;
+          }
+          break;
+        case 'round-start':
+          // payload: { drawerIndex, secret, duration, startAt }
+          onRoundStart(data.payload);
+          break;
+        case 'round-end':
+          // payload: { winnerIndex (or null), secret, scores? }
+          onRoundEnd(data.payload);
+          break;
+        case 'guess':
+          if (data.payload){
+            addGuessItem(data.payload.byName || `P${data.payload.playerIndex+1}`, data.payload.text);
+          }
+          break;
+        case 'next-turn':
+          if (data.payload && typeof data.payload.nextDrawerIndex !== 'undefined'){
+            drawerIndex = data.payload.nextDrawerIndex;
+            currentDrawerEl.textContent = drawerIndex === 0 ? p1name.value : p2name.value;
+            // stop local round
+            stopLocalRoundUI();
+          }
+          break;
+      }
+    }
+
+    // ---- Drawing helpers ----
+    function resizeCanvas(){
       const rect = board.getBoundingClientRect();
       const ratio = window.devicePixelRatio || 1;
-      board.width = rect.width * ratio;
-      board.height = rect.height * ratio;
-      ctx.scale(ratio, ratio);
-      redraw();
+      board.width = Math.round(rect.width * ratio);
+      board.height = Math.round(rect.height * ratio);
+      ctx.setTransform(ratio,0,0,ratio,0,0);
+      ctx.lineJoin = 'round';
+      redrawAll();
     }
-
     const ro = new ResizeObserver(resizeCanvas);
     ro.observe(board);
+    window.addEventListener('orientationchange', ()=> setTimeout(resizeCanvas,200));
 
-    function startStroke(x, y, color, width) {
+    function setBrush(){
+      ctx.lineWidth = Number(brushSize.value);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = colorEl.value;
+    }
+    setBrush();
+    brushSize.addEventListener('input', setBrush);
+    colorEl.addEventListener('input', setBrush);
+
+    function startPath(x,y){
       drawing = true;
-      currentStroke = {
-        id: Date.now(),
-        stroke: [{ x, y }],
-        color,
-        width
-      };
+      currentStroke = { id: 's-' + Date.now() + '-' + Math.floor(Math.random()*10000), stroke:[{x,y}], color: colorEl.value, width: Number(brushSize.value) };
+      ctx.beginPath();
+      ctx.moveTo(x,y);
+    }
+    function pushPoint(x,y){
+      if(!drawing) return;
+      currentStroke.stroke.push({x,y});
+      ctx.lineTo(x,y);
+      ctx.stroke();
+    }
+    function endPath(){
+      if(!drawing) return;
+      drawing = false;
+      ctx.closePath();
+      // push local and send to server
+      historyStrokes.push(currentStroke);
+      send({ type: 'stroke', payload: currentStroke });
+      currentStroke = null;
     }
 
-    function drawStroke(stroke) {
-      const pts = stroke.stroke;
-
+    function drawStroke(s){
+      const pts = s.stroke || s;
+      if(!pts || !pts.length) return;
       ctx.beginPath();
-      ctx.lineWidth = stroke.width;
-      ctx.strokeStyle = stroke.color;
-      ctx.lineCap = "round";
-
+      ctx.lineWidth = s.width || (pts[0] && pts[0].width) || 6;
+      ctx.strokeStyle = s.color || (pts[0] && pts[0].color) || '#000';
       ctx.moveTo(pts[0].x, pts[0].y);
-
-      for (let i = 1; i < pts.length; i++) {
-        ctx.lineTo(pts[i].x, pts[i].y);
-      }
-
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
       ctx.closePath();
     }
 
-    function redraw() {
-      ctx.clearRect(0, 0, board.width, board.height);
-      for (let s of historyStrokes) drawStroke(s);
+    function redrawAll(){
+      // clear in device pixels
+      ctx.clearRect(0,0,board.width,board.height);
+      for(const s of historyStrokes) drawStroke(s);
     }
 
-    board.addEventListener("pointerdown", (e) => {
+    // pointer handling
+    board.addEventListener('pointerdown', (e) => {
+      if (!roundPlaying) return; // only allow drawing during a round
+      e.preventDefault();
       const rect = board.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
-      const color = document.getElementById("color").value;
-      const width = document.getElementById("brushSize").value;
-
-      startStroke(x, y, color, width);
+      setBrush();
+      startPath(x,y);
+      board.setPointerCapture(e.pointerId);
     });
-
-    board.addEventListener("pointermove", (e) => {
-      if (!drawing) return;
-
+    board.addEventListener('pointermove', (e) => {
+      if(!drawing) return;
+      e.preventDefault();
       const rect = board.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
-      currentStroke.stroke.push({ x, y });
-      drawStroke(currentStroke);
+      pushPoint(x,y);
     });
-
-    board.addEventListener("pointerup", () => {
-      if (!drawing) return;
-      drawing = false;
-
-      historyStrokes.push(currentStroke);
-
-      ws.send(JSON.stringify({
-        type: "stroke",
-        payload: currentStroke
-      }));
+    board.addEventListener('pointerup', (e) => {
+      if(e.pointerId) board.releasePointerCapture(e.pointerId);
+      endPath();
     });
+    board.addEventListener('pointercancel', endPath);
 
+    // clear/undo/save
+    clearBtn.addEventListener('click', () => { historyStrokes = []; redrawAll(); send({ type: 'clear' }); });
+    undoBtn.addEventListener('click', () => { historyStrokes.pop(); redrawAll(); send({ type: 'undo' }); });
+    saveBtn.addEventListener('click', () => { const a = document.createElement('a'); a.href = board.toDataURL('image/png'); a.download = 'pictionary.png'; a.click(); });
 
-    /* ------------------------
-      WebSocket events
-    ------------------------- */
-    ws.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+    // ---- Game logic (client side controlled UI, server-side authoritative events) ----
+    function onRoundStart(payload){
+      if(!payload) return;
+      drawerIndex = payload.drawerIndex;
+      const duration = payload.duration || 60;
+      localSecret = payload.secret || null;
 
-      if (data.type === "history") {
-        historyStrokes = data.strokes;
-        redraw();
+      // UI updates
+      currentDrawerEl.textContent = drawerIndex === 0 ? p1name.value : p2name.value;
+      roundPlaying = true;
+      timeLeft = duration;
+      timerEl.textContent = formatTime(timeLeft);
+      startTimer(duration);
+      roundCount++;
+      roundCountEl.textContent = String(roundCount);
+
+      // show secret only to the drawer (honor-system)
+      if (myPlayerIndex !== null && myPlayerIndex === drawerIndex) {
+        secretWordEl.textContent = localSecret;
+      } else {
+        secretWordEl.textContent = '—';
       }
 
-      if (data.type === "stroke") {
-        historyStrokes.push(data.payload);
-        drawStroke(data.payload);
-      }
-
-      if (data.type === "clear") {
-        historyStrokes = [];
-        redraw();
-      }
-
-      if (data.type === "undo") {
-        historyStrokes.pop();
-        redraw();
-      }
-    };
-
-
-    /* ------------------------
-          BUTTONS
-    ------------------------- */
-
-    document.getElementById("clearBtn").onclick = () => {
+      // reset canvas for a fresh round (optional)
       historyStrokes = [];
-      redraw();
-      ws.send(JSON.stringify({ type: "clear" }));
-    };
+      redrawAll();
+    }
 
-    document.getElementById("undoBtn").onclick = () => {
-      historyStrokes.pop();
-      redraw();
-      ws.send(JSON.stringify({ type: "undo" }));
-    };
+    function onRoundEnd(payload){
+      roundPlaying = false;
+      stopLocalRoundUI();
+      if (!payload) return;
+      const winner = payload.winnerIndex;
+      const secret = payload.secret;
+      if (winner === null || typeof winner === 'undefined') {
+        alert('Time is up! The word was: ' + secret);
+      } else {
+        alert((winner === 0 ? p1name.value : p2name.value) + ' guessed correctly! Word: ' + secret);
+      }
+      // update scores if provided
+      if (payload.scores && Array.isArray(payload.scores)) {
+        p1scoreEl.textContent = payload.scores[0] || 0;
+        p2scoreEl.textContent = payload.scores[1] || 0;
+      }
+      // show secret briefly
+      secretWordEl.textContent = secret;
+      setTimeout(()=> { secretWordEl.textContent = '—'; }, 4000);
+    }
 
-    resizeCanvas();
+    function startTimer(seconds){
+      if (roundTimer) clearInterval(roundTimer);
+      timeLeft = seconds;
+      timerEl.textContent = formatTime(timeLeft);
+      roundTimer = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = formatTime(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(roundTimer);
+          roundTimer = null;
+          // let server handle round end (server broadcasts round-end when timer expires)
+          roundPlaying = false;
+        }
+      }, 1000);
+    }
+
+    function stopLocalRoundUI(){
+      if (roundTimer) { clearInterval(roundTimer); roundTimer = null; }
+      roundPlaying = false;
+      // if local client is drawer, keep secret visible briefly else hide
+      if (myPlayerIndex !== null && myPlayerIndex === drawerIndex) {
+        // keep showing for a moment
+        setTimeout(()=> secretWordEl.textContent = '—', 4000);
+      } else {
+        secretWordEl.textContent = '—';
+      }
+    }
+
+    function formatTime(s){ const mm = String(Math.floor(s/60)).padStart(2,'0'); const ss = String(s%60).padStart(2,'0'); return mm + ':' + ss; }
+
+    // ---- Controls: start / next / guess / names / claim identity ----
+    startBtn.addEventListener('click', ()=>{
+      const duration = Number(timeLimitEl.value) || 60;
+      // send start-round request to server; server chooses secret and broadcasts
+      const payload = { drawerIndex: drawerIndex, duration, names: {0: p1name.value, 1: p2name.value} };
+      send({ type: 'start-round', payload });
+    });
+
+    nextBtn.addEventListener('click', ()=>{
+      // swap drawer locally and inform server
+      drawerIndex = 1 - drawerIndex;
+      currentDrawerEl.textContent = drawerIndex === 0 ? p1name.value : p2name.value;
+      stopLocalRoundUI();
+      send({ type: 'next-turn', payload: { nextDrawerIndex: drawerIndex } });
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      // reset scores & canvas locally and request everyone to clear
+      p1scoreEl.textContent = '0'; p2scoreEl.textContent = '0';
+      historyStrokes = []; redrawAll();
+      send({ type: 'clear' });
+      // NOTE: server-side scores remain; to reset server scores you would extend API (not included here).
+    });
+
+    // Guessing
+    guessBtn.addEventListener('click', submitGuess);
+    guessInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGuess(); });
+
+    function submitGuess(){
+      const text = guessInput.value.trim();
+      if(!text) return;
+      const payload = { playerIndex: myPlayerIndex === 1 ? 1 : 0, text };
+      // show locally
+      addGuessItem(myPlayerIndex !== null ? (myPlayerIndex === 0 ? p1name.value : p2name.value) : 'You', text);
+      send({ type: 'guess', payload });
+      guessInput.value = '';
+    }
+
+    function addGuessItem(byName, text){
+      const el = document.createElement('div'); el.className = 'guess-item';
+      el.textContent = `${byName}: ${text}`;
+      guessesWrap.prepend(el);
+    }
+
+    // Set names and notify server
+    setNamesBtn.addEventListener('click', () => {
+      send({ type: 'set-names', payload: { 0: p1name.value, 1: p2name.value } });
+    });
+
+    // Claim identity (client-side)
+    claimP1.addEventListener('click', () => { myPlayerIndex = 0; claimP1.textContent = 'You are P1'; claimP2.textContent = 'I am Player 2'; secretWordEl.textContent = (drawerIndex === 0 ? localSecret || '—' : '—'); });
+    claimP2.addEventListener('click', () => { myPlayerIndex = 1; claimP2.textContent = 'You are P2'; claimP1.textContent = 'I am Player 1'; secretWordEl.textContent = (drawerIndex === 1 ? localSecret || '—' : '—'); });
+
+    // When connect, request state
+    ws.addEventListener('open', ()=> send({ type: 'request-state' }));
+
+    // helper: prefill drawer name initially
+    currentDrawerEl.textContent = 'Player 1';
+
+    // init resize
+    setTimeout(resizeCanvas, 50);
   </script>
 </body>
-
 </html>
