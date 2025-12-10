@@ -1,1 +1,353 @@
+<!doctype html>
+<html lang="en">
 
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+  <title>Pictionary Live — Realtime Multiplayer</title>
+
+  <style>
+    :root {
+      --bg: #071428;
+      --panel: rgba(255, 255, 255, 0.03);
+      --accent: #06b6d4;
+      --muted: #9fb0c6;
+      --text: #e6eef6;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: linear-gradient(180deg, #031022 0%, #071428 100%);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: 12px auto;
+      padding: 12px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--panel);
+      padding: 12px;
+      border-radius: 10px;
+    }
+
+    .canvas-area {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .canvas-wrap {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .canvas-frame {
+      width: 100%;
+      height: 0;
+      padding-bottom: 62.5%;
+      position: relative;
+    }
+
+    canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: black;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .tool-field {
+      padding: 6px 8px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <h1>🎨 Pictionary Live — Realtime</h1>
+      <div style="display:flex;gap:8px;align-items:center">
+        <label class="muted">Round (sec)</label>
+        <input id="timeLimit" type="number" value="60"
+          style="width:80px;padding:8px;border-radius:8px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.1)" />
+      </div>
+    </header>
+
+    <main>
+      <section class="canvas-area panel">
+        <div class="canvas-wrap">
+          <div class="canvas-frame">
+            <canvas id="board"></canvas>
+          </div>
+        </div>
+
+        <div class="tools">
+          <div class="tool-field">
+            <label>Brush</label>
+            <input id="brushSize" type="range" min="2" max="40" value="6" />
+          </div>
+
+          <div class="tool-field">
+            <label>Color</label>
+            <input id="color" type="color" value="#000000" />
+          </div>
+
+          <button class="btn secondary" id="clearBtn">Clear</button>
+          <button class="btn secondary" id="undoBtn">Undo</button>
+        </div>
+
+      </section>
+
+      <!-- Sidebar -->
+      <aside class="panel" style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label>Player 1</label>
+          <input id="p1name" value="Player 1"
+            style="width:100%;padding:8px;margin-top:6px;border-radius:8px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.12)" />
+        </div>
+
+        <div>
+          <label>Player 2</label>
+          <input id="p2name" value="Player 2"
+            style="width:100%;padding:8px;margin-top:6px;border-radius:8px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.12)" />
+        </div>
+
+        <button class="btn" id="startBtn">Start Round</button>
+        <button class="btn secondary" id="nextBtn">Next Turn</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+
+        <div>
+          <p>⏳ Time Left: <span id="timer">00:00</span></p>
+          <p>🎯 Current drawer: <span id="currentDrawer">Player 1</span></p>
+          <p>📝 Word: <span id="secretWord">—</span></p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    /* ---------------------------
+     CONFIG: SET YOUR SERVER HERE
+    ---------------------------- */
+
+    const WS_URL = "wss://YOUR-RENDER-URL.onrender.com";
+    // Example after deploy:
+    // const WS_URL = "wss://pictionary-ws.onrender.com";
+
+
+    /* ------------------------
+       WebSocket Connection
+    ------------------------- */
+
+    let ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => console.log("Connected to WebSocket server");
+    ws.onclose = () => console.log("Disconnected from WebSocket server");
+
+
+    /* ------------------------
+         Canvas + Drawing
+    ------------------------- */
+
+    const board = document.getElementById("board");
+    const ctx = board.getContext("2d");
+
+    let drawing = false;
+    let historyStrokes = [];
+
+    function resizeCanvas() {
+      const rect = board.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      board.width = rect.width * ratio;
+      board.height = rect.height * ratio;
+      ctx.scale(ratio, ratio);
+      redraw();
+    }
+
+    const ro = new ResizeObserver(resizeCanvas);
+    ro.observe(board);
+
+    function startStroke(x, y, color, width) {
+      drawing = true;
+      currentStroke = {
+        id: Date.now(),
+        stroke: [{ x, y }],
+        color,
+        width
+      };
+    }
+
+    function drawStroke(stroke) {
+      const pts = stroke.stroke;
+
+      ctx.beginPath();
+      ctx.lineWidth = stroke.width;
+      ctx.strokeStyle = stroke.color;
+      ctx.lineCap = "round";
+
+      ctx.moveTo(pts[0].x, pts[0].y);
+
+      for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
+      }
+
+      ctx.stroke();
+      ctx.closePath();
+    }
+
+    function redraw() {
+      ctx.clearRect(0, 0, board.width, board.height);
+      for (let s of historyStrokes) drawStroke(s);
+    }
+
+    board.addEventListener("pointerdown", (e) => {
+      const rect = board.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const color = document.getElementById("color").value;
+      const width = document.getElementById("brushSize").value;
+
+      startStroke(x, y, color, width);
+    });
+
+    board.addEventListener("pointermove", (e) => {
+      if (!drawing) return;
+
+      const rect = board.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      currentStroke.stroke.push({ x, y });
+      drawStroke(currentStroke);
+    });
+
+    board.addEventListener("pointerup", () => {
+      if (!drawing) return;
+      drawing = false;
+
+      historyStrokes.push(currentStroke);
+
+      ws.send(JSON.stringify({
+        type: "stroke",
+        payload: currentStroke
+      }));
+    });
+
+
+    /* ------------------------
+      WebSocket events
+    ------------------------- */
+    ws.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.type === "history") {
+        historyStrokes = data.strokes;
+        redraw();
+      }
+
+      if (data.type === "stroke") {
+        historyStrokes.push(data.payload);
+        drawStroke(data.payload);
+      }
+
+      if (data.type === "clear") {
+        historyStrokes = [];
+        redraw();
+      }
+
+      if (data.type === "undo") {
+        historyStrokes.pop();
+        redraw();
+      }
+    };
+
+
+    /* ------------------------
+          BUTTONS
+    ------------------------- */
+
+    document.getElementById("clearBtn").onclick = () => {
+      historyStrokes = [];
+      redraw();
+      ws.send(JSON.stringify({ type: "clear" }));
+    };
+
+    document.getElementById("undoBtn").onclick = () => {
+      historyStrokes.pop();
+      redraw();
+      ws.send(JSON.stringify({ type: "undo" }));
+    };
+
+    resizeCanvas();
+  </script>
+</body>
+
+</html>
